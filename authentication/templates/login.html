@@ -1,0 +1,42 @@
+{% extends 'auth_base.html' %}
+{% block content %}
+
+	<div class="container login-container col-md-12" style="padding-top: 10%;">
+		<div class="row">
+			<div class="form-container col-sm-9 col-md-6 col-lg-6 mx-auto">
+				<div class="card card-signin my-5">
+					<div class="card-body">
+						<div class="messages" style="padding-top: 0px; position: relative;">
+						    {% if messages %}
+						        {% for message in messages %}
+								<span class="glyphicon glyphicon-remove-sign close close_message_div" aria-hidden="true"></span>
+								<div class='alert alert-{% if message.tags == "success" %}success{% else %}danger{% endif %}'>
+								<strong>{{ message }}</strong>
+								</div>
+						        {% endfor %}
+						    {% endif %}
+						</div>
+						<form class="form-horizontal login-form" role="form" method="POST" action="." autocomplete="on">
+						    
+							{% csrf_token %}
+							<div class="form-label-group" style="height: auto; line-height: 2.5; border-radius: 5px; margin-bottom: 1.5rem;">
+								<input type="text" name="username" id="id_username" class="form-control" placeholder="Enter Username" required>
+							</div>
+							
+							<div class="form-label-group" style="height: auto; line-height: 2.5; border-radius: 5px; margin-bottom: 1.5rem;">
+								<input name="password" type="password" id="inputPassword" class="form-control" placeholder="Enter Password" required>
+							</div>
+
+							<div class="form-group">
+								<div>
+									<button class="btn btn-lg btn-primary btn-block submit login-button" type="submit" style="background-color: #4d6b80;">Log-in</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% block message %}
+{% include 'message.html' %}
+{% endblock %}
+{% block content %}
+<div class="cancel-subscription-container">
+    <form action="{% url 'payments:change-payment-method' plan_obj.id %}"  method="POST" enctype="multipart/form-data" id="add_host" class="col-sm-12">
+        {% csrf_token %}
+        <h4>{{plan_obj.plans.plan_type}}</h4>
+        <p>Available payment method to change: <b>{{payment_method}}</b></p>
+        <input type="hidden" name="payment_method" value="{{payment_method}}">
+        <p><b>Change payment method Detail: </b>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."</p>
+        <a href="{% url 'authentication:dashboard' %}" class="btn btn-danger">Cancel</a>
+        <button type="submit" class="btn btn-primary">Change-payment-method</button>
+    </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+{% endblock %}
