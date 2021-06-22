@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block message %}
+{% include 'message.html' %}
+{% endblock %}
+{% block extra_css %}
+<style type="text/css">
+    .card {
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.8);
+      max-width: 500px;
+      margin: auto;
+      text-align: center;
+      font-family: arial;
+    }
+
+    /*.price {
+      color: grey;
+      font-size: 22px;
+    }*/
+
+    .card button {
+      border: none;
+      outline: 0;
+      padding: 12px;
+      color: white;
+      background-color: #000;
+      text-align: center;
+      cursor: pointer;
+      width: 100%;
+      font-size: 18px;
+    }
+
+    .card button:hover {
+      opacity: 0.7;
+    }
+</style>
+{% endblock %}
+{% block content %}
+    {% if active_plan %}
+        <div class="card">
+            <h1>{{active_plan.plans.plan_type | capfirst}}</h1>
+            <p class="price">Price: <b>{{active_plan.price}}</b></p>
+            <p>Billing Cycle: <b>{{active_plan.billing_type}}</b></p>
+            <p>Billing Date: <b>{{active_plan.valid_to|date:"D, M d, Y"}}</b></p>
+            <p>Payment History: <b>{{active_plan.valid_to|date:"D, M d, Y"}}</b></p>
+            <a style="margin-bottom: 1%;" href="{% url 'payments:choose-plan' active_plan.id %}" class="btn btn-primary">Change Subscription</a>
+            <a style="margin-bottom: 1%;" href="{% url 'payments:change-billing-cycle' active_plan.id %}" class="btn btn-primary">Change Billing Cycle</a>
+            <a style="margin-bottom: 1%;" href="{% url 'payments:change-credit-card' active_plan.id %}" class="btn btn-primary">Change Credit Card</a>
+            <a style="margin-bottom: 1%;" href="{% url 'payments:change-payment-method' active_plan.id %}" class="btn btn-primary">Change Payment Method</a>
+            <a style="margin-bottom: 1%;" href="{% url 'payments:cancel-subscription' active_plan.id %}" class="btn btn-primary">Cancel Subscription</a>
+        </div>
+    {% else %}
+        <h1>Available Plan</h1>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Plan Type</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for object in subscriptionplans %}
+                <tr>
+                    <td>{{object.plan_type}}</td>
+                    <td>{{object.price}}</td>
+                    <td>
+                        <a href="{% url 'payments:home' pk=object.id %}" class="btn btn-primary">create subscription</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% load widget_tweaks%}
+{% block extra_css %}
+<style type="text/css">
+    .form-control[readonly] {
+    background-color: white;
+    opacity: 1;
+}
+.sec-hotels-view-detail input {
+  border-top-style: hidden;
+  border-right-style: hidden;
+  border-left-style: hidden;
+  border-bottom-style: groove;
+  background-color: white;
+}
+label.required::after {
+    content: ' *';
+    color: red;
+}
+.StripeElement {
+          box-sizing: border-box;
+
+          height: 40px;
+
+          padding: 10px 12px;
+
+          border: 1px solid transparent;
+          border-radius: 4px;
+          background-color: white;
+
+          box-shadow: 0 1px 3px 0 #e6ebf1;
+          -webkit-transition: box-shadow 150ms ease;
+          transition: box-shadow 150ms ease;
+        }
+
+        .StripeElement--focus {
+          box-shadow: 0 1px 3px 0 #cfd7df;
+        }
+
+        .StripeElement--invalid {
+          border-color: #fa755a;
+        }
+
+        .StripeElement--webkit-autofill {
+          background-color: #fefde5 !important;
+        }
+</style>
+{% endblock %}
+{% block content %}
+  <main>
+    <div class="sec sec-hotels-view-detail">
+      <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <!-- <h4>Booking Details</h4> -->
+              <form action="{% url 'payments:home' plan_obj.id %}" method="post" id="payment-form">
+                {% csrf_token %}
+                <h6>Plan name: {{plan_obj.plan_type}}</h6>
+                <h4>Price: <span class="price">{{plan_obj.price}}</span></h4>
+                <input type="hidden" name="subscription_id" value="{{plan_obj.id}}">
+                <div class="form-group row">
+                    <label for="billing_cycles">Choose a Billing Type:</label>
+                    <div class="col-sm-8">
+                        <select name="billing_cycles" id="billing_cycles" class="form-control">
+                            {% for billing in billing_cycles %}
+                                <option value="{{billing.0}}">{{billing.1}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="payment_types">Choose a Payment Type:</label>
+                    <div class="col-sm-8">
+                        <select name="payment_types" id="payment_types" class="form-control">
+                            {% for payment in payment_types %}
+                                <option value="{{payment.0}}">{{payment.1}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <!-- <input type="hidden" name="amount" value=""> -->
+                <p>Amount to pay: <b><span class="amount"></span></b></p>
+                <div class="room-rate-form">
+                    <div class="form-feild">
+                        <input required hidden="true" class="form-control" type="text" name="amount" value="{{plan_obj.price}}" placeholder="">
+                    </div>
+                    <div class="form-feild">
+                        <label>Email</label>
+                        <input readonly="true" class="form-control" type="text" name="email" placeholder="email..." value="{{request.user.email}}">
+                    </div>
+                    <div class="form-feild">
+                        <label for="card-element">
+                        Enter card detail: 
+                        </label>
+                        <div id="card-element">
+                            <!-- A Stripe Element will be inserted here. -->
+                        </div>
+                        <div id="card-errors" role="alert"></div>
+                    </div>
+                    <div class="form-feild">
+                        <div id="paypal-button-container">
+                            <!-- A Paypal Element will be inserted here. -->
+                        </div>
+                    </div>
+                    <input type="hidden" class="capture_id" name="capture_id" value="">
+                    <!-- <script src="https://checkout.stripe.com/checkout.js" class="stripe-button" data-key="{{key}}" data-description="{{plan_obj.plan_type}}" data-amount="{{plan_obj.price}}" data-locale="auto"></script> -->
+                    <div class="pull-left submit-buttons" style="padding-top: 26px;">
+                        <a href="{% url 'authentication:dashboard' %}" class="btn btn-danger">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+    </div>
+  </main>
+{% endblock %}
+{% block extra_js %}
+<script src="https://js.stripe.com/v3/"></script>
+<script src="https://www.paypal.com/sdk/js?client-id={{paypal_key}}&currency=USD"></script>
+<script type="text/javascript">
+    function integrate_stripe(){
+        // Create a Stripe client.
+        var stripe = Stripe('{{key}}');
+
+        // Create an instance of Elements.
+        var elements = stripe.elements();
+
+        // Custom styling can be passed to options when creating an Element.
+        // (Note that this demo uses a wider set of styles than the guide below.)
+        var style = {
+                base: {
+                    color: '#32325d',
+                    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                    fontSmoothing: 'antialiased',
+                    fontSize: '16px',
+                    '::placeholder': {
+                      color: '#aab7c4'
+                }
+            },
+            invalid: {
+            color: '#fa755a',
+            iconColor: '#fa755a'
+            }
+        };
+
+        // Create an instance of the card Element.
+        var card = elements.create('card', {style: style});
+
+        // Add an instance of the card Element into the `card-element` <div>.
+        card.mount('#card-element');
+
+        // Handle real-time validation errors from the card Element.
+        card.addEventListener('change', function(event) {
+            var displayError = document.getElementById('card-errors');
+            if (event.error) {
+            displayError.textContent = event.error.message;
+            } else {
+            displayError.textContent = '';
+            }
+        });
+
+        // Handle form submission.
+        var form = document.getElementById('payment-form');
+        form.addEventListener('submit', function(event) {            
+          event.preventDefault();
+
+          stripe.createToken(card).then(function(result) {
+            if (result.error) {
+                // Inform the user if there was an error.
+                var errorElement = document.getElementById('card-errors');
+                errorElement.textContent = result.error.message;
+            } else {
+                // Send the token to your server.
+                stripeTokenHandler(result.token);
+            }
+          });
+        });
+
+        // Submit the form with the token ID.
+        function stripeTokenHandler(token) {
+            // Insert the token ID into the form so it gets submitted to the server
+            var form = document.getElementById('payment-form');
+            var hiddenInput = document.createElement('input');
+            hiddenInput.setAttribute('type', 'hidden');
+            hiddenInput.setAttribute('name', 'stripeToken');
+            hiddenInput.setAttribute('value', token.id);
+            form.appendChild(hiddenInput);
+
+            // Submit the form
+            form.submit();
+        }
+    }
+    function integrate_paypal() {
+        // Render the PayPal button into #paypal-button-container
+        paypal.Buttons({
+
+            // Set up the transaction
+            createOrder: function(data, actions) {
+                var subs_amt = parseFloat($(".amount").text());
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: subs_amt
+                        }
+                    }]
+                });
+            },
+
+            // Finalize the transaction
+            onApprove: function(data, actions) {
+                console.log("==data==", data);
+                console.log("==actions==", actions);
+                approve_res = actions.order.capture().then(function(details) {
+                    // Show a success message to the buyer
+                    console.log('Transaction completed by ' + details.payer.name.given_name + '!');
+                    if(details.status == "COMPLETED"){
+                        var capture_id = details.id;
+                        $(".capture_id").val(capture_id);
+                        $("#payment-form").submit()
+                    }
+                });
+                res = actions.order.capture();
+                return approve_res
+            }
+
+
+        }).render('#paypal-button-container');
+    }
+    integrate_stripe()
+    function set_price(valueSelected){
+        if(valueSelected=="monthly"){
+            var price = parseFloat($(".price").text());
+            $(".amount").text(price);
+        }
+        else if(valueSelected=="yearly"){
+            var price = parseFloat($(".price").text());
+            var amount = price * 12;
+            $(".amount").text(amount);
+        }
+        else if(valueSelected=="paypal"){
+            $("#card-element").empty();
+            integrate_paypal()
+            $(".submit-buttons").hide()
+            console.log("paypal");
+        }
+        else if(valueSelected=="stripe"){
+            $("#paypal-button-container").empty();
+            integrate_stripe()
+            $(".submit-buttons").show()
+            console.log("stripe");
+        }
+
+    }
+    default_val = $("option:selected").val();
+    set_price(default_val);
+    $('select').on('change', function (e) {
+        var optionSelected = $("option:selected", this);
+        var valueSelected = this.value;
+        set_price(valueSelected);
+    });
+</script>
+{% endblock %}

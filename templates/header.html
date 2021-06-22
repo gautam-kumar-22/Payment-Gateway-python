@@ -1,0 +1,11 @@
+<div class="bs-example">
+    <nav class="navbar navbar-expand-md header-example">
+        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
+            <div class="login-user-name" style="font-weight: bold;">Welcome  {{request.user}}</div>
+        </div>
+        <a href="{% url 'authentication:logout' %}" style="color: white;">logout</a>
+    </nav>
+</div>
