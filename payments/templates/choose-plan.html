@@ -59,7 +59,7 @@
                 console.log("==actions==", actions);
                 approve_res = actions.order.capture().then(function(details) {
                     // Show a success message to the buyer
-                    alert('Transaction completed by ' + details.payer.name.given_name + '!');
+                    console.log('Transaction completed by ' + details.payer.name.given_name + '!');
                     if(details.status == "COMPLETED"){
                         var capture_id = details.id;
                         $(".capture_id").val(capture_id);
